@@ -1,0 +1,2 @@
+Contém Tiles e Tilesets usados para construir cenários 2D com Tilemap.
+Dica: organize aqui pisos, paredes, terrenos e outros elementos usados para montar fases.

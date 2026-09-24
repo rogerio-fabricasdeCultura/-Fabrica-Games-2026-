@@ -1,0 +1,2 @@
+Contém as cenas que representam fases ou áreas jogáveis.
+Dica: cada fase deve ter um nome claro, como Level01, Level02 ou um nome relacionado ao local.

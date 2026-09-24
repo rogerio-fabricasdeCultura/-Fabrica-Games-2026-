@@ -1,0 +1,2 @@
+Contém efeitos sonoros, também chamados de Sound Effects.
+Dica: passos, ataques, colisões, botões e outros sons curtos devem ficar aqui.

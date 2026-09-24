@@ -1,0 +1,2 @@
+Contém imagens usadas como textura em materiais e modelos.
+Dica: use esta pasta para imagens que serão aplicadas sobre objetos, não para elementos de interface.

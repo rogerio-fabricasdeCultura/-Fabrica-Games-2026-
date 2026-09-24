@@ -1,0 +1,3 @@
+Pasta principal com todo o conteúdo criado para o jogo.
+Dica: mantenha os arquivos do projeto dentro daqui para facilitar a organização e o trabalho em equipe.
+“Antes de importar ou criar um arquivo, pense em qual pasta ele pertence.”

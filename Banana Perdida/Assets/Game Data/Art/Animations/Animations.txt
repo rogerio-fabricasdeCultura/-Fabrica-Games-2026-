@@ -1,0 +1,2 @@
+Contém animações de personagens, objetos e outros elementos do jogo.
+Dica: coloque aqui Animation Clips e arquivos relacionados às animações.

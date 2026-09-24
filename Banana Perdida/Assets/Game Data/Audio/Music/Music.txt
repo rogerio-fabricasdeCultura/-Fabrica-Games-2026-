@@ -1,0 +1,2 @@
+Contém as músicas e trilhas sonoras do jogo.
+Dica: coloque aqui músicas de menu, fases e outros momentos do jogo.

@@ -1,0 +1,2 @@
+Contém as cenas principais que controlam o fluxo do jogo.
+Dica: menu principal, tela inicial ou uma cena principal de carregamento podem ficar aqui.

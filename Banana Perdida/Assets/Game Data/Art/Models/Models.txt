@@ -1,0 +1,2 @@
+Contém modelos 3D usados no jogo.
+Dica: coloque aqui personagens, objetos, construções e elementos de cenário em 3D.
