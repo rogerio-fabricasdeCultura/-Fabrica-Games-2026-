@@ -1,0 +1,2 @@
+Contém conteúdos externos adicionados ao projeto.
+Dica: use para organizar assets baixados ou importados de outras fontes e evite misturá-los com os arquivos criados pela equipe.

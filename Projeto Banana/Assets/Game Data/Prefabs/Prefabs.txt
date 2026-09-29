@@ -1,0 +1,2 @@
+Contém GameObjects configurados para serem reutilizados no projeto.
+Dica: jogadores, inimigos, itens, obstáculos e outros objetos reutilizáveis devem virar Prefabs.
