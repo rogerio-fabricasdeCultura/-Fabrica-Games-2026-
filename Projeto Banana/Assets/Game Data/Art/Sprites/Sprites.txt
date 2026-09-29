@@ -1,0 +1,2 @@
+Contém imagens usadas diretamente como elementos 2D.
+Dica: personagens, inimigos, itens e elementos de cenário 2D devem ficar aqui.

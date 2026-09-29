@@ -1,0 +1,2 @@
+Contém os códigos C# responsáveis pelos comportamentos e regras do jogo.
+Dica: use nomes que deixem clara a função do script, como PlayerMovement, EnemyHealth ou GameManager.

@@ -1,0 +1,2 @@
+Contém todos os arquivos de áudio do jogo.
+Dica: separe músicas e efeitos sonoros nas pastas correspondentes.

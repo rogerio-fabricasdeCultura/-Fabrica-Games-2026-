@@ -1,0 +1,2 @@
+Contém todas as cenas criadas para o jogo.
+Dica: mantenha fases, menus e cenas principais separadas para facilitar o trabalho da equipe.

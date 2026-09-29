@@ -1,0 +1,2 @@
+Contém efeitos visuais usados no jogo.
+Dica: partículas, fumaça, magia, explosões, brilhos e outros efeitos visuais devem ficar aqui.

@@ -1,0 +1,2 @@
+Contém todos os arquivos relacionados à parte visual do jogo.
+Dica: use as subpastas para separar cada tipo de arte e evitar arquivos soltos.
