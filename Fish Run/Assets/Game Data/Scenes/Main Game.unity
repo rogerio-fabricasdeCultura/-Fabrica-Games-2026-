@@ -404,11 +404,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6040553562102360403, guid: 8de18790b807beb40bc5bf427639cef9, type: 3}
       propertyPath: field of view
-      value: 9
+      value: 21
       objectReference: {fileID: 0}
     - target: {fileID: 6040553562102360403, guid: 8de18790b807beb40bc5bf427639cef9, type: 3}
       propertyPath: m_FocalLength
-      value: 162.57588
+      value: 69.035645
       objectReference: {fileID: 0}
     - target: {fileID: 6040553562102360403, guid: 8de18790b807beb40bc5bf427639cef9, type: 3}
       propertyPath: m_SensorSize.x
