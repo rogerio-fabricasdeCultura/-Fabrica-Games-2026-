@@ -1,0 +1,57 @@
+{
+    "name": "RiverPlayerInput",
+    "maps": [
+        {
+            "name": "Player",
+            "id": "5f378ab8-98f6-46ef-88aa-458cc4de9c62",
+            "actions": [
+                {
+                    "name": "Look",
+                    "type": "Value",
+                    "id": "19fd1d91-98f3-41ac-b8f6-83a2e3fe2a31",
+                    "expectedControlType": "Vector2"
+                },
+                {
+                    "name": "Boost",
+                    "type": "Button",
+                    "id": "e5e0b5d4-d7f4-47d5-9c69-0c5b75f50929",
+                    "expectedControlType": "Button"
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "a17847dc-8a0f-4c0f-9c9c-253d4b4cc5f4",
+                    "path": "<Mouse>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardMouse",
+                    "action": "Look",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e1e2c4a8-9ccf-45dd-a89b-3d90cd52f02e",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardMouse",
+                    "action": "Boost",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "KeyboardMouse",
+            "bindingGroup": "KeyboardMouse",
+            "devices": [
+                { "devicePath": "<Keyboard>", "isOptional": false, "isOR": false },
+                { "devicePath": "<Mouse>", "isOptional": false, "isOR": false }
+            ]
+        }
+    ]
+}
