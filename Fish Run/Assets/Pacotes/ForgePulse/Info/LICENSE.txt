@@ -1,0 +1,9 @@
+Stylized Medieval Environment Pack Lite
+
+Copyright © ForgePulse
+
+This asset may be used in personal and commercial Unity projects.
+
+Redistribution, resale, or republishing of the original asset files is prohibited.
+
+This package is distributed under the Unity Asset Store End User License Agreement (EULA).

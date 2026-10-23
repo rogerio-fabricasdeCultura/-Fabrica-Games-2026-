@@ -351,7 +351,7 @@ MonoBehaviour:
   CruiseSpeed: 0.35
   MaxSpeed: 5
   Acceleration: 1.5
-  Deceleration: 1.5
+  Deceleration: 3.5
   TurnSpeed: 180
   MaximumPitch: 85
   InvertY: 0
@@ -363,26 +363,14 @@ MonoBehaviour:
   KeepBelowWaterSurface: 1
   WaterSurface: {fileID: 0}
   WaterLevel: 4
-  SurfaceClearance: 0.25
+  SurfaceClearance: 1
   CollisionRadius: 0.18
   CollisionSkinWidth: 0.01
---- !u!143 &742000000000000008
-CharacterController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2625247831117978595}
-  m_Material: {fileID: 0}
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Height: 0.36
-  m_Radius: 0.18
-  m_SlopeLimit: 0
-  m_StepOffset: 0
-  m_SkinWidth: 0.01
-  m_MinMoveDistance: 0
-  m_Center: {x: 0, y: 0, z: 0}
+  _lookInput: {x: 0, y: 0}
+  _boostHeld: 0
+  _currentSpeed: 0
+  _keyboardDetected: 0
+  _mouseBound: 0
 --- !u!114 &742000000000000004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -393,10 +381,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_Actions: {fileID: -944628639613478452, guid: 2c28c82bf46c4a5dbd86b0a1c8bcb209, type: 3}
   m_NotificationBehavior: 3
+  m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -412,6 +401,24 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!143 &742000000000000008
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2625247831117978595}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Height: 0.36
+  m_Radius: 0.18
+  m_SlopeLimit: 0
+  m_StepOffset: 0
+  m_SkinWidth: 0.01
+  m_MinMoveDistance: 0
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2923525776681427610
 GameObject:
   m_ObjectHideFlags: 0

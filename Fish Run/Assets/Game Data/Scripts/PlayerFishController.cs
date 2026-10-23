@@ -1,5 +1,6 @@
 using FishAlive;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 /// <summary>
@@ -53,6 +54,19 @@ public class PlayerFishController : MonoBehaviour
     [Tooltip("Small tolerance used by the Character Controller to slide along solid surfaces.")]
     [Min(0.001f)] public float CollisionSkinWidth = 0.01f;
 
+    [Header("Power Up")]
+    [Tooltip("Seconds of power granted by each collectible. Another pickup restarts this timer.")]
+    [Min(0.1f)] public float PowerDuration = 10f;
+    public UnityEvent OnPowerStarted = new UnityEvent();
+    public UnityEvent OnPowerEnded = new UnityEvent();
+
+    [Header("Runtime Power")]
+    [SerializeField] private float _powerTimeRemaining;
+
+    public bool IsPoweredUp => _powerTimeRemaining > 0f;
+    public bool CanDefeatEnemies => IsPoweredUp;
+    public float PowerTimeRemaining => _powerTimeRemaining;
+
     [Header("Runtime Input / Speed")]
     [SerializeField] private Vector2 _lookInput;
     [SerializeField] private bool _boostHeld;
@@ -80,6 +94,7 @@ public class PlayerFishController : MonoBehaviour
 
     private void Awake()
     {
+        _powerTimeRemaining = 0f;
         _fishMotion = GetComponent<FishMotion>();
         _characterController = GetComponent<CharacterController>();
         if (_characterController == null)
@@ -161,6 +176,7 @@ public class PlayerFishController : MonoBehaviour
 
     private void OnDisable()
     {
+        EndPower();
         _isReady = false;
         ReleaseCursor();
         _lookInput = Vector2.zero;
@@ -181,6 +197,7 @@ public class PlayerFishController : MonoBehaviour
 
     private void Update()
     {
+        UpdatePower();
         if (!_isReady)
         {
             return;
@@ -236,6 +253,53 @@ public class PlayerFishController : MonoBehaviour
         float speedPercent = Mathf.InverseLerp(slowSpeed, Mathf.Max(slowSpeed, MaxSpeed), _currentSpeed);
         float animationSpeed = Mathf.Lerp(CruiseAnimationSpeed, FastAnimationSpeed, speedPercent);
         _fishMotion.SetExternalSwimSpeed(_currentSpeed, animationSpeed);
+    }
+
+    /// <summary>Refresh the power timer without stacking duration or changing swim speed.</summary>
+    public bool TryActivatePower()
+    {
+        if (!isActiveAndEnabled || !_isReady)
+        {
+            return false;
+        }
+
+        bool wasPoweredUp = IsPoweredUp;
+        _powerTimeRemaining = Mathf.Max(0.1f, PowerDuration);
+        if (!wasPoweredUp)
+        {
+            OnPowerStarted.Invoke();
+        }
+
+        return true;
+    }
+
+    private void UpdatePower()
+    {
+        if (!IsPoweredUp)
+        {
+            return;
+        }
+
+        // Scaled time pauses the power along with the game.
+        if (_powerTimeRemaining <= Time.deltaTime)
+        {
+            EndPower();
+        }
+        else
+        {
+            _powerTimeRemaining -= Time.deltaTime;
+        }
+    }
+
+    private void EndPower()
+    {
+        if (!IsPoweredUp)
+        {
+            return;
+        }
+
+        _powerTimeRemaining = 0f;
+        OnPowerEnded.Invoke();
     }
 
     private void LateUpdate()
