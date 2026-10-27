@@ -1,2 +1,0 @@
-Contém os Materials usados para definir a aparência dos objetos.
-Dica: materiais de personagens, cenário e objetos devem ficar organizados aqui.
