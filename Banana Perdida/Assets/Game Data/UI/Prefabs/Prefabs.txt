@@ -1,2 +1,0 @@
-Contém elementos de interface preparados para reutilização.
-Dica: botões, painéis, barras de vida e janelas que aparecem várias vezes podem ser transformados em Prefabs.

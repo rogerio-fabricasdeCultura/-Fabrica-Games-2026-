@@ -1,2 +1,0 @@
-Contém imagens usadas na interface.
-Dica: ícones, fundos de menu, imagens de botões e elementos do HUD devem ficar aqui.
