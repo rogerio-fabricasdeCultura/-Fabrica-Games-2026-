@@ -13,6 +13,7 @@ public class CollectibleEffectSettings
     [Min(0.1f)] public float Duration = 10f;
     [Min(1f)] public float SpeedMultiplier = 2f;
     [Min(1f)] public float SizeMultiplier = 1.75f;
+    [Min(1f)] public float SuperStrengthSizeMultiplier = 1.5f;
     public Material StoneMaterial;
     public Material SpeedTrailMaterial;
     public Material ShieldMaterial;

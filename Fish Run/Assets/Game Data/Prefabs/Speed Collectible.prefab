@@ -135,6 +135,7 @@ MonoBehaviour:
     Duration: 10
     SpeedMultiplier: 2
     SizeMultiplier: 1.75
+    SuperStrengthSizeMultiplier: 1.5
     StoneMaterial: {fileID: 0}
     SpeedTrailMaterial: {fileID: 2100000, guid: 15769bd8d9d54a6da0db4599d2d542b5, type: 2}
     ShieldMaterial: {fileID: 0}

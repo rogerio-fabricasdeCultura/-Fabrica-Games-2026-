@@ -82,7 +82,7 @@ public class CollectibleLabelVfx : MonoBehaviour
             Vector3 directionToCamera = _mainCamera.transform.position - _labelTransform.position;
             if (directionToCamera.sqrMagnitude > 0.001f)
             {
-                _labelTransform.rotation = Quaternion.LookRotation(directionToCamera, _mainCamera.transform.up);
+                _labelTransform.rotation = Quaternion.LookRotation(-directionToCamera, _mainCamera.transform.up);
             }
         }
     }

@@ -19,6 +19,27 @@ public class PlayerFishController : MonoBehaviour
     public Camera GameCamera;
     [Min(0.01f)] public float MouseSensitivity = 0.12f;
 
+    [Header("Minimap")]
+    public bool EnableTerrainMinimap = true;
+    [Range(128, 1024)] public int MinimapResolution = 256;
+    [Min(120f)] public float MinimapDiameter = 220f;
+    [Min(5f)] public float MinimapOrthographicSize = 35f;
+    [Min(10f)] public float MinimapCameraHeight = 100f;
+    public bool MinimapRotatesWithFish = true;
+    [Tooltip("How strongly the minimap follows the third-person camera zoom. Lower values keep the map zoom steadier.")]
+    [Range(0f, 1f)] public float MinimapZoomFollowMultiplier = 0.25f;
+    [Tooltip("Caps how much the minimap can zoom out compared with its base zoom.")]
+    [Min(1f)] public float MinimapMaximumZoomOutMultiplier = 1.25f;
+    public Sprite MinimapPlayerIcon;
+    [Min(8f)] public float MinimapIconSize = 28f;
+    [Tooltip("Optional map icon for Speed collectibles. A cyan dot is used when empty.")]
+    public Sprite MinimapSpeedCollectibleIcon;
+    [Tooltip("Optional map icon for Armor/Size collectibles. A light blue dot is used when empty.")]
+    public Sprite MinimapArmorCollectibleIcon;
+    [Tooltip("Optional map icon for Power collectibles. An orange dot is used when empty.")]
+    public Sprite MinimapPowerCollectibleIcon;
+    [Min(8f)] public float MinimapCollectibleIconSize = 18f;
+
     [Header("Fish Movement Speed")]
     [Min(0.01f)] public float CruiseSpeed = 0.35f;
     [Min(0.01f)] public float MaxSpeed = 5f;
@@ -77,6 +98,7 @@ public class PlayerFishController : MonoBehaviour
     [SerializeField] private bool _mouseBound;
 
     public float CurrentSpeed => _currentSpeed;
+    public Vector3 MovementDirection => _controlledRotation * Vector3.forward;
 
     private FishMotion _fishMotion;
     private PlayerInput _playerInput;
@@ -173,6 +195,23 @@ public class PlayerFishController : MonoBehaviour
         if (GameCamera == null)
         {
             GameCamera = Camera.main;
+        }
+
+        if (EnableTerrainMinimap && GetComponent<TerrainMinimapRuntime>() == null)
+        {
+            Terrain terrain = FindObjectOfType<Terrain>();
+            if (terrain != null)
+            {
+                TerrainMinimapRuntime minimap = gameObject.AddComponent<TerrainMinimapRuntime>();
+                minimap.Initialize(
+                    this,
+                    terrain,
+                    MinimapResolution,
+                    MinimapDiameter,
+                    MinimapOrthographicSize,
+                    MinimapCameraHeight,
+                    MinimapRotatesWithFish);
+            }
         }
     }
 
@@ -406,6 +445,12 @@ public class PlayerFishController : MonoBehaviour
             return;
         }
 
+        if (_activeCollectibleType == CollectibleType.SuperStrength)
+        {
+            transform.localScale = _originalScale * Mathf.Max(1f, _activeEffectSettings.SuperStrengthSizeMultiplier);
+            return;
+        }
+
         if (_activeCollectibleType != CollectibleType.Size)
         {
             return;
@@ -443,6 +488,7 @@ public class PlayerFishController : MonoBehaviour
             Duration = effectSettings.Duration,
             SpeedMultiplier = effectSettings.SpeedMultiplier,
             SizeMultiplier = effectSettings.SizeMultiplier,
+            SuperStrengthSizeMultiplier = effectSettings.SuperStrengthSizeMultiplier,
             StoneMaterial = effectSettings.StoneMaterial,
             SpeedTrailMaterial = effectSettings.SpeedTrailMaterial,
             ShieldMaterial = effectSettings.ShieldMaterial,

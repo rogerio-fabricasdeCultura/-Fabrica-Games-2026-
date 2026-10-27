@@ -42,6 +42,7 @@ public class PowerCollectibleEditor : Editor
                 break;
 
             case CollectibleType.SuperStrength:
+                EditorGUILayout.PropertyField(_effectSettings.FindPropertyRelative("SuperStrengthSizeMultiplier"));
                 EditorGUILayout.PropertyField(_effectSettings.FindPropertyRelative("SuperStrengthPulseSpeed"));
                 EditorGUILayout.PropertyField(_effectSettings.FindPropertyRelative("SuperStrengthEmissionStrength"));
                 EditorGUILayout.PropertyField(_effectSettings.FindPropertyRelative("SuperStrengthPulseColor"));

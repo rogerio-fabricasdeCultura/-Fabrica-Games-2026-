@@ -134,6 +134,7 @@ MonoBehaviour:
     Duration: 10
     SpeedMultiplier: 3
     SizeMultiplier: 1.75
+    SuperStrengthSizeMultiplier: 1.5
     StoneMaterial: {fileID: 2100000, guid: 8fc32daf06f7484cb39c1236bd49d5aa, type: 2}
     SpeedTrailMaterial: {fileID: 2100000, guid: 15769bd8d9d54a6da0db4599d2d542b5, type: 2}
     ShieldMaterial: {fileID: 0}
@@ -143,7 +144,7 @@ MonoBehaviour:
     SuperStrengthPulseColor: {r: 1, g: 0.8, b: 0.12, a: 1}
     SpeedTrailDuration: 0.6
     SpeedTrailWidth: 0.1
-    SpeedTrailColor: {r: 0.1, g: 0.85, b: 1, a: 0.85}
+    SpeedTrailColor: {r: 0.82155573, g: 0.9389152, b: 0.9622642, a: 0.85}
 --- !u!1001 &5550568275284168489
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -229,7 +230,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6148984012030375908, guid: 35cf5d1e067a5ca469ccd8af57baa536, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 6148984012030375908, guid: 35cf5d1e067a5ca469ccd8af57baa536, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -245,7 +246,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8454901961066516112, guid: 35cf5d1e067a5ca469ccd8af57baa536, type: 3}
       propertyPath: m_fontSize
-      value: 12
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 8454901961066516112, guid: 35cf5d1e067a5ca469ccd8af57baa536, type: 3}
       propertyPath: m_fontAsset
@@ -253,7 +254,7 @@ PrefabInstance:
       objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 8454901961066516112, guid: 35cf5d1e067a5ca469ccd8af57baa536, type: 3}
       propertyPath: m_fontSizeBase
-      value: 12
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 8454901961066516112, guid: 35cf5d1e067a5ca469ccd8af57baa536, type: 3}
       propertyPath: m_sharedMaterial
