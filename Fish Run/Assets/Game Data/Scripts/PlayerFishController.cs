@@ -1,5 +1,6 @@
 using FishAlive;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 /// <summary>
@@ -17,6 +18,27 @@ public class PlayerFishController : MonoBehaviour
     [Header("Camera")]
     public Camera GameCamera;
     [Min(0.01f)] public float MouseSensitivity = 0.12f;
+
+    [Header("Minimap")]
+    public bool EnableTerrainMinimap = true;
+    [Range(128, 1024)] public int MinimapResolution = 256;
+    [Min(120f)] public float MinimapDiameter = 220f;
+    [Min(5f)] public float MinimapOrthographicSize = 35f;
+    [Min(10f)] public float MinimapCameraHeight = 100f;
+    public bool MinimapRotatesWithFish = true;
+    [Tooltip("How strongly the minimap follows the third-person camera zoom. Lower values keep the map zoom steadier.")]
+    [Range(0f, 1f)] public float MinimapZoomFollowMultiplier = 0.25f;
+    [Tooltip("Caps how much the minimap can zoom out compared with its base zoom.")]
+    [Min(1f)] public float MinimapMaximumZoomOutMultiplier = 1.25f;
+    public Sprite MinimapPlayerIcon;
+    [Min(8f)] public float MinimapIconSize = 28f;
+    [Tooltip("Optional map icon for Speed collectibles. A cyan dot is used when empty.")]
+    public Sprite MinimapSpeedCollectibleIcon;
+    [Tooltip("Optional map icon for Armor/Size collectibles. A light blue dot is used when empty.")]
+    public Sprite MinimapArmorCollectibleIcon;
+    [Tooltip("Optional map icon for Power collectibles. An orange dot is used when empty.")]
+    public Sprite MinimapPowerCollectibleIcon;
+    [Min(8f)] public float MinimapCollectibleIconSize = 18f;
 
     [Header("Fish Movement Speed")]
     [Min(0.01f)] public float CruiseSpeed = 0.35f;
@@ -53,6 +75,21 @@ public class PlayerFishController : MonoBehaviour
     [Tooltip("Small tolerance used by the Character Controller to slide along solid surfaces.")]
     [Min(0.001f)] public float CollisionSkinWidth = 0.01f;
 
+    [Header("Power Up")]
+    [Tooltip("Seconds of effect granted by each collectible. Picking up another collectible restarts the timer.")]
+    [Min(0.1f)] public float PowerDuration = 10f;
+    public UnityEvent OnPowerStarted = new UnityEvent();
+    public UnityEvent OnPowerEnded = new UnityEvent();
+
+    [Header("Runtime Power")]
+    [SerializeField] private float _powerTimeRemaining;
+
+    public bool IsPoweredUp => _powerTimeRemaining > 0f;
+    public bool CanDefeatEnemies => IsPoweredUp && _activeCollectibleType == CollectibleType.SuperStrength;
+    public bool IsInvulnerable => IsPoweredUp && _activeCollectibleType == CollectibleType.Size;
+    public float PowerTimeRemaining => _powerTimeRemaining;
+    public CollectibleType ActiveCollectibleType => _activeCollectibleType;
+
     [Header("Runtime Input / Speed")]
     [SerializeField] private Vector2 _lookInput;
     [SerializeField] private bool _boostHeld;
@@ -61,6 +98,7 @@ public class PlayerFishController : MonoBehaviour
     [SerializeField] private bool _mouseBound;
 
     public float CurrentSpeed => _currentSpeed;
+    public Vector3 MovementDirection => _controlledRotation * Vector3.forward;
 
     private FishMotion _fishMotion;
     private PlayerInput _playerInput;
@@ -76,10 +114,22 @@ public class PlayerFishController : MonoBehaviour
     private Mouse _pairedMouse;
     private UnderwaterCameraEffect _waterEffect;
     private SkinnedMeshRenderer[] _bodyRenderers;
+    private Material[] _originalBodyMaterials;
+    private MaterialPropertyBlock[] _originalPropertyBlocks;
+    private MaterialPropertyBlock _effectPropertyBlock;
+    private TrailRenderer _speedTrail;
+    private GameObject _shieldVisual;
+    private MeshRenderer _shieldRenderer;
+    private Material _defaultSpeedTrailMaterial;
+    private Material _defaultShieldMaterial;
     private CharacterController _characterController;
+    private Vector3 _originalScale;
+    private CollectibleType _activeCollectibleType;
+    private CollectibleEffectSettings _activeEffectSettings = new CollectibleEffectSettings();
 
     private void Awake()
     {
+        _powerTimeRemaining = 0f;
         _fishMotion = GetComponent<FishMotion>();
         _characterController = GetComponent<CharacterController>();
         if (_characterController == null)
@@ -97,10 +147,91 @@ public class PlayerFishController : MonoBehaviour
 
         GetComponent<Animator>().applyRootMotion = false;
         _bodyRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
+        _effectPropertyBlock = new MaterialPropertyBlock();
+        _defaultSpeedTrailMaterial = Resources.Load<Material>("Speed Trail");
+        _defaultShieldMaterial = Resources.Load<Material>("Shield Bubble");
+        _speedTrail = GetComponent<TrailRenderer>();
+        if (_speedTrail == null)
+        {
+            _speedTrail = gameObject.AddComponent<TrailRenderer>();
+        }
+
+        _speedTrail.enabled = false;
+        _speedTrail.autodestruct = false;
+        _speedTrail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        _speedTrail.receiveShadows = false;
+        _speedTrail.minVertexDistance = 0.05f;
+        if (_defaultSpeedTrailMaterial != null)
+        {
+            _speedTrail.sharedMaterial = _defaultSpeedTrailMaterial;
+        }
+
+        _shieldVisual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        _shieldVisual.name = "Collectible Shield Visual";
+        Collider shieldCollider = _shieldVisual.GetComponent<Collider>();
+        if (shieldCollider != null)
+        {
+            shieldCollider.enabled = false;
+            Destroy(shieldCollider);
+        }
+
+        _shieldVisual.transform.SetParent(transform, false);
+        _shieldVisual.transform.localPosition = Vector3.zero;
+        _shieldVisual.transform.localRotation = Quaternion.identity;
+        _shieldRenderer = _shieldVisual.GetComponent<MeshRenderer>();
+        _shieldRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        _shieldRenderer.receiveShadows = false;
+        _shieldVisual.SetActive(false);
+        _originalScale = transform.localScale;
+        _originalBodyMaterials = new Material[_bodyRenderers.Length];
+        _originalPropertyBlocks = new MaterialPropertyBlock[_bodyRenderers.Length];
+        for (int rendererIndex = 0; rendererIndex < _bodyRenderers.Length; rendererIndex++)
+        {
+            _originalBodyMaterials[rendererIndex] = _bodyRenderers[rendererIndex].sharedMaterial;
+            _originalPropertyBlocks[rendererIndex] = new MaterialPropertyBlock();
+            _bodyRenderers[rendererIndex].GetPropertyBlock(_originalPropertyBlocks[rendererIndex]);
+        }
 
         if (GameCamera == null)
         {
             GameCamera = Camera.main;
+        }
+
+        LoadDefaultMinimapCollectibleIcons();
+
+        if (EnableTerrainMinimap && GetComponent<TerrainMinimapRuntime>() == null)
+        {
+            Terrain terrain = FindObjectOfType<Terrain>();
+            if (terrain != null)
+            {
+                TerrainMinimapRuntime minimap = gameObject.AddComponent<TerrainMinimapRuntime>();
+                minimap.Initialize(
+                    this,
+                    terrain,
+                    MinimapResolution,
+                    MinimapDiameter,
+                    MinimapOrthographicSize,
+                    MinimapCameraHeight,
+                    MinimapRotatesWithFish);
+            }
+        }
+    }
+
+    private void LoadDefaultMinimapCollectibleIcons()
+    {
+        if (MinimapSpeedCollectibleIcon == null)
+        {
+            MinimapSpeedCollectibleIcon = Resources.Load<Sprite>("MinimapIcons/MinimapSpeed");
+        }
+
+        if (MinimapArmorCollectibleIcon == null)
+        {
+            MinimapArmorCollectibleIcon = Resources.Load<Sprite>("MinimapIcons/MinimapArmor");
+        }
+
+        if (MinimapPowerCollectibleIcon == null)
+        {
+            MinimapPowerCollectibleIcon = Resources.Load<Sprite>("MinimapIcons/MinimapPower");
         }
     }
 
@@ -161,6 +292,7 @@ public class PlayerFishController : MonoBehaviour
 
     private void OnDisable()
     {
+        EndPower();
         _isReady = false;
         ReleaseCursor();
         _lookInput = Vector2.zero;
@@ -181,6 +313,7 @@ public class PlayerFishController : MonoBehaviour
 
     private void Update()
     {
+        UpdatePower();
         if (!_isReady)
         {
             return;
@@ -220,12 +353,17 @@ public class PlayerFishController : MonoBehaviour
         _pitch += _lookInput.y * MouseSensitivity * (InvertY ? 1f : -1f);
         _pitch = Mathf.Clamp(_pitch, -MaximumPitch, MaximumPitch);
         Quaternion desiredRotation = Quaternion.Euler(_pitch, _yaw, 0f);
+        float speedMultiplier = IsCollectibleActive(CollectibleType.Speed)
+            ? Mathf.Max(1f, _activeEffectSettings.SpeedMultiplier)
+            : 1f;
         _controlledRotation = Quaternion.RotateTowards(
-            _controlledRotation, desiredRotation, Mathf.Max(1f, TurnSpeed) * Time.deltaTime);
+            _controlledRotation, desiredRotation, Mathf.Max(1f, TurnSpeed) * speedMultiplier * Time.deltaTime);
 
-        float slowSpeed = Mathf.Max(0.01f, CruiseSpeed);
-        float targetSpeed = _boostHeld ? Mathf.Max(slowSpeed, MaxSpeed) : slowSpeed;
-        float speedChange = _boostHeld ? Acceleration : Deceleration;
+        float slowSpeed = Mathf.Max(0.01f, CruiseSpeed) * speedMultiplier;
+        float targetSpeed = _boostHeld
+            ? Mathf.Max(slowSpeed, Mathf.Max(0.01f, MaxSpeed) * speedMultiplier)
+            : slowSpeed;
+        float speedChange = (_boostHeld ? Acceleration : Deceleration) * speedMultiplier;
         _currentSpeed = Mathf.MoveTowards(
             _currentSpeed, targetSpeed, Mathf.Max(0.01f, speedChange) * Time.deltaTime);
 
@@ -233,9 +371,234 @@ public class PlayerFishController : MonoBehaviour
         ApplyMovementBounds();
         ApplyWaterSurfaceLimit();
 
-        float speedPercent = Mathf.InverseLerp(slowSpeed, Mathf.Max(slowSpeed, MaxSpeed), _currentSpeed);
+        float boostedSpeed = Mathf.Max(slowSpeed, MaxSpeed * speedMultiplier);
+        float speedPercent = Mathf.InverseLerp(slowSpeed, boostedSpeed, _currentSpeed);
         float animationSpeed = Mathf.Lerp(CruiseAnimationSpeed, FastAnimationSpeed, speedPercent);
         _fishMotion.SetExternalSwimSpeed(_currentSpeed, animationSpeed);
+    }
+
+    /// <summary>Activates or refreshes the selected collectible effect.</summary>
+    public bool TryActivatePower(CollectibleType collectibleType, CollectibleEffectSettings effectSettings)
+    {
+        if (!isActiveAndEnabled || !_isReady || effectSettings == null)
+        {
+            return false;
+        }
+
+        if (IsPoweredUp && _activeCollectibleType != collectibleType)
+        {
+            EndPower();
+        }
+
+        bool wasPoweredUp = IsPoweredUp;
+        _activeCollectibleType = collectibleType;
+        _activeEffectSettings = CopyEffectSettings(effectSettings);
+        _powerTimeRemaining = Mathf.Max(0.1f, _activeEffectSettings.Duration);
+        ApplyPowerEffect();
+        if (!wasPoweredUp)
+        {
+            OnPowerStarted.Invoke();
+        }
+
+        return true;
+    }
+
+    /// <summary>Preserves the original API by treating untyped activations as super strength.</summary>
+    public bool TryActivatePower()
+    {
+        return TryActivatePower(CollectibleType.SuperStrength, new CollectibleEffectSettings
+        {
+            Duration = PowerDuration
+        });
+    }
+
+    public bool TryActivatePower(CollectibleType collectibleType)
+    {
+        return TryActivatePower(collectibleType, new CollectibleEffectSettings
+        {
+            Duration = PowerDuration
+        });
+    }
+
+    private void UpdatePower()
+    {
+        if (!IsPoweredUp)
+        {
+            return;
+        }
+
+        UpdateSuperStrengthPulse();
+
+        // Scaled time pauses the power along with the game.
+        if (_powerTimeRemaining <= Time.deltaTime)
+        {
+            EndPower();
+        }
+        else
+        {
+            _powerTimeRemaining -= Time.deltaTime;
+        }
+    }
+
+    private void EndPower()
+    {
+        if (!IsPoweredUp)
+        {
+            return;
+        }
+
+        _powerTimeRemaining = 0f;
+        ClearPowerEffect();
+        OnPowerEnded.Invoke();
+    }
+
+    private bool IsCollectibleActive(CollectibleType collectibleType)
+    {
+        return IsPoweredUp && _activeCollectibleType == collectibleType;
+    }
+
+    private void ApplyPowerEffect()
+    {
+        if (_activeCollectibleType == CollectibleType.Speed)
+        {
+            ConfigureSpeedTrail();
+            return;
+        }
+
+        if (_activeCollectibleType == CollectibleType.SuperStrength)
+        {
+            transform.localScale = _originalScale * Mathf.Max(1f, _activeEffectSettings.SuperStrengthSizeMultiplier);
+            return;
+        }
+
+        if (_activeCollectibleType != CollectibleType.Size)
+        {
+            return;
+        }
+
+        transform.localScale = _originalScale * Mathf.Max(1f, _activeEffectSettings.SizeMultiplier);
+        _shieldVisual.transform.localScale = Vector3.one * Mathf.Max(1f, _activeEffectSettings.ShieldScale);
+        Material shieldMaterial = _activeEffectSettings.ShieldMaterial != null
+            ? _activeEffectSettings.ShieldMaterial
+            : _defaultShieldMaterial;
+        if (shieldMaterial != null)
+        {
+            _shieldRenderer.sharedMaterial = shieldMaterial;
+            _shieldVisual.SetActive(true);
+        }
+
+        if (_activeEffectSettings.StoneMaterial == null)
+        {
+            return;
+        }
+
+        foreach (SkinnedMeshRenderer bodyRenderer in _bodyRenderers)
+        {
+            if (bodyRenderer != null)
+            {
+                bodyRenderer.sharedMaterial = _activeEffectSettings.StoneMaterial;
+            }
+        }
+    }
+
+    private CollectibleEffectSettings CopyEffectSettings(CollectibleEffectSettings effectSettings)
+    {
+        return new CollectibleEffectSettings
+        {
+            Duration = effectSettings.Duration,
+            SpeedMultiplier = effectSettings.SpeedMultiplier,
+            SizeMultiplier = effectSettings.SizeMultiplier,
+            SuperStrengthSizeMultiplier = effectSettings.SuperStrengthSizeMultiplier,
+            StoneMaterial = effectSettings.StoneMaterial,
+            SpeedTrailMaterial = effectSettings.SpeedTrailMaterial,
+            ShieldMaterial = effectSettings.ShieldMaterial,
+            ShieldScale = effectSettings.ShieldScale,
+            SuperStrengthPulseSpeed = effectSettings.SuperStrengthPulseSpeed,
+            SuperStrengthEmissionStrength = effectSettings.SuperStrengthEmissionStrength,
+            SuperStrengthPulseColor = effectSettings.SuperStrengthPulseColor,
+            SpeedTrailDuration = effectSettings.SpeedTrailDuration,
+            SpeedTrailWidth = effectSettings.SpeedTrailWidth,
+            SpeedTrailColor = effectSettings.SpeedTrailColor
+        };
+    }
+
+    private void ConfigureSpeedTrail()
+    {
+        _speedTrail.Clear();
+        Material trailMaterial = _activeEffectSettings.SpeedTrailMaterial != null
+            ? _activeEffectSettings.SpeedTrailMaterial
+            : _defaultSpeedTrailMaterial;
+        if (trailMaterial != null)
+        {
+            _speedTrail.sharedMaterial = trailMaterial;
+        }
+
+        _speedTrail.time = Mathf.Max(0.05f, _activeEffectSettings.SpeedTrailDuration);
+        _speedTrail.startWidth = Mathf.Max(0f, _activeEffectSettings.SpeedTrailWidth);
+        _speedTrail.endWidth = 0f;
+
+        Color trailColor = _activeEffectSettings.SpeedTrailColor;
+        Gradient trailGradient = new Gradient();
+        trailGradient.SetKeys(
+            new[]
+            {
+                new GradientColorKey(trailColor, 0f),
+                new GradientColorKey(trailColor, 1f)
+            },
+            new[]
+            {
+                new GradientAlphaKey(trailColor.a, 0f),
+                new GradientAlphaKey(0f, 1f)
+            });
+        _speedTrail.colorGradient = trailGradient;
+        _speedTrail.enabled = true;
+    }
+
+    private void ClearPowerEffect()
+    {
+        transform.localScale = _originalScale;
+        _speedTrail.Clear();
+        _speedTrail.enabled = false;
+        _shieldVisual.SetActive(false);
+        for (int rendererIndex = 0; rendererIndex < _bodyRenderers.Length; rendererIndex++)
+        {
+            SkinnedMeshRenderer bodyRenderer = _bodyRenderers[rendererIndex];
+            if (bodyRenderer == null)
+            {
+                continue;
+            }
+
+            bodyRenderer.sharedMaterial = _originalBodyMaterials[rendererIndex];
+            bodyRenderer.SetPropertyBlock(_originalPropertyBlocks[rendererIndex]);
+        }
+
+    }
+
+    private void UpdateSuperStrengthPulse()
+    {
+        if (_activeCollectibleType != CollectibleType.SuperStrength)
+        {
+            return;
+        }
+
+        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * _activeEffectSettings.SuperStrengthPulseSpeed * Mathf.PI * 2f);
+        Color baseTint = Color.Lerp(Color.white, _activeEffectSettings.SuperStrengthPulseColor, pulse);
+        Color emission = _activeEffectSettings.SuperStrengthPulseColor *
+            (pulse * _activeEffectSettings.SuperStrengthEmissionStrength);
+        for (int rendererIndex = 0; rendererIndex < _bodyRenderers.Length; rendererIndex++)
+        {
+            SkinnedMeshRenderer bodyRenderer = _bodyRenderers[rendererIndex];
+            if (bodyRenderer == null)
+            {
+                continue;
+            }
+
+            _effectPropertyBlock.Clear();
+            _effectPropertyBlock.SetColor("_BaseColor", baseTint);
+            _effectPropertyBlock.SetColor("_Color", baseTint);
+            _effectPropertyBlock.SetColor("_EmissionColor", emission);
+            bodyRenderer.SetPropertyBlock(_effectPropertyBlock);
+        }
     }
 
     private void LateUpdate()

@@ -8,6 +8,16 @@ using UnityEngine.InputSystem;
 [DefaultExecutionOrder(200)]
 public class FishThirdPersonCamera : MonoBehaviour
 {
+    public float CurrentZoomDistance =>
+        Application.isPlaying && EnableZoom && _zoomDistance > 0f
+            ? _zoomDistance
+            : DefaultZoomDistance;
+
+    public float DefaultZoomDistance => Mathf.Clamp(
+        FollowOffset.magnitude,
+        Mathf.Max(0.1f, MinZoomDistance),
+        Mathf.Max(Mathf.Max(0.1f, MinZoomDistance), MaxZoomDistance));
+
     [Header("Target")]
     public Transform Target;
 
