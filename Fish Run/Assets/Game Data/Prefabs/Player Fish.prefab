@@ -366,6 +366,14 @@ MonoBehaviour:
   SurfaceClearance: 1
   CollisionRadius: 0.18
   CollisionSkinWidth: 0.01
+  PowerDuration: 10
+  OnPowerStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPowerEnded:
+    m_PersistentCalls:
+      m_Calls: []
+  _powerTimeRemaining: 0
   _lookInput: {x: 0, y: 0}
   _boostHeld: 0
   _currentSpeed: 0
