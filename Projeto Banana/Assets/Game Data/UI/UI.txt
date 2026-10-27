@@ -1,2 +1,0 @@
-Contém todos os elementos relacionados à interface do jogador.
-Dica: menus, HUD, botões, barras de vida e outros elementos de tela devem ser organizados aqui.

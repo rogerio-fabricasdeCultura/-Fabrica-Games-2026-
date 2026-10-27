@@ -1,0 +1,9 @@
+Support
+
+Email:
+forge.pulse.studio@gmail.com
+
+When contacting support, please include:
+- Unity version
+- Render Pipeline
+- Description of the issue
