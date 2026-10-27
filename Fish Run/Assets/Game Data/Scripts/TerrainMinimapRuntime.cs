@@ -196,10 +196,6 @@ public class TerrainMinimapRuntime : MonoBehaviour
         RawImage mapImage = mapObject.GetComponent<RawImage>();
         mapImage.texture = _mapTexture;
         mapImage.raycastTarget = false;
-        if (SystemInfo.graphicsUVStartsAtTop)
-        {
-            mapImage.uvRect = new Rect(0f, 1f, 1f, -1f);
-        }
 
         GameObject collectibleMarkerRootObject = new GameObject("Collectible Markers", typeof(RectTransform));
         collectibleMarkerRootObject.transform.SetParent(maskObject.transform, false);

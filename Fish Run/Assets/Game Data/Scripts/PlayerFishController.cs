@@ -197,6 +197,8 @@ public class PlayerFishController : MonoBehaviour
             GameCamera = Camera.main;
         }
 
+        LoadDefaultMinimapCollectibleIcons();
+
         if (EnableTerrainMinimap && GetComponent<TerrainMinimapRuntime>() == null)
         {
             Terrain terrain = FindObjectOfType<Terrain>();
@@ -212,6 +214,24 @@ public class PlayerFishController : MonoBehaviour
                     MinimapCameraHeight,
                     MinimapRotatesWithFish);
             }
+        }
+    }
+
+    private void LoadDefaultMinimapCollectibleIcons()
+    {
+        if (MinimapSpeedCollectibleIcon == null)
+        {
+            MinimapSpeedCollectibleIcon = Resources.Load<Sprite>("MinimapIcons/MinimapSpeed");
+        }
+
+        if (MinimapArmorCollectibleIcon == null)
+        {
+            MinimapArmorCollectibleIcon = Resources.Load<Sprite>("MinimapIcons/MinimapArmor");
+        }
+
+        if (MinimapPowerCollectibleIcon == null)
+        {
+            MinimapPowerCollectibleIcon = Resources.Load<Sprite>("MinimapIcons/MinimapPower");
         }
     }
 
